@@ -1,7 +1,7 @@
 """
 Interactive Chat with Bot
 ===============================
-Load the fine-tuned Qwen 2.5 model and start an interactive
+Load the fine-tuned model and start an interactive
 terminal session with RAG-enhanced personal knowledge retrieval.
 
 Usage:

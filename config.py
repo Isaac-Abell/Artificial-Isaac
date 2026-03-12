@@ -43,10 +43,11 @@ CONVO_MIN_TOKENS = 75      # Minimum tokens to include conversation
 # ==============================
 
 # Base model (Unsloth 4-bit quantized models recommended)
-BASE_MODEL_ID = "unsloth/mistral-nemo-it-bnb-4bit"
+BASE_MODEL_ID = "unsloth/Qwen3.5-27B-bnb-4bit"
+# (Or "unsloth/Qwen3.5-27B-bnb-4bit")
 
 # Tokenizer for preprocessing (should match base model family)
-TOKENIZER_ID = "mistralai/Mistral-Nemo-Instruct-v1"
+TOKENIZER_ID = "Qwen/Qwen3.5-27B"
 
 # Chat template for training (unsloth.chat_templates)
 # Options: "chatml", "llama-3", "mistral", "gemma", "phi-3", "zephyr", "alpaca"
@@ -55,9 +56,10 @@ CHAT_TEMPLATE = "chatml"
 # ==============================
 # TRAINING SETTINGS
 # ==============================
+RANDOM_SEED = 67
 MAX_LENGTH = 2048
 BATCH_SIZE = 1
-GRADIENT_ACCUMULATION_STEPS = 16
+GRADIENT_ACCUMULATION_STEPS = 4
 
 # LoRA Optimization
 LORA_R = 32
@@ -66,10 +68,24 @@ LORA_DROPOUT = 0.05
 
 # Training Mechanics
 EPOCHS = 3
-LEARNING_RATE = 2e-4       
+LEARNING_RATE = 2e-4
+WARMUP_STEPS = 5
+LOGGING_STEPS = 1
+OPTIMIZER = "adamw_8bit"
+WEIGHT_DECAY = 0.01
+LR_SCHEDULER_TYPE = "linear"
+
+DATASET_NUM_PROC = 2
+PACKING = True   
 USE_BF16 = True            
 USE_4BIT = True
 QUANT_TYPE = "nf4"
+
+# LoRA Target Modules
+TARGET_MODULES = [
+    "q_proj", "k_proj", "v_proj", "o_proj",
+    "gate_proj", "up_proj", "down_proj"
+]
 
 # ==============================
 # RAG CONFIGURATION

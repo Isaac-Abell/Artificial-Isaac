@@ -1,7 +1,7 @@
 """
 Unified Data Preprocessor
 ===========================
-Converts WhatsApp and Instagram chat exports to ShareGPT format for training.
+Converts WhatsApp and Instagram chat exports to standard Hugging Face format (role/content) for training.
 This is the only preprocessing script needed - outputs universal format that
 works with any model via Unsloth's chat template system.
 
@@ -61,8 +61,8 @@ def process_whatsapp_file(txt_path: Path, chat_owner: str, encoder) -> list:
     df["date_previous"] = df["date"].shift(periods=1)
     df["time_delta"] = (df["date"] - df["date_previous"]).dt.total_seconds().fillna(0)
     
-    # Assign roles: you are "gpt", others are "human"
-    df["role"] = df["username"].apply(lambda x: "gpt" if x == chat_owner else "human")
+    # Assign roles: you are "assistant", others are "user"
+    df["role"] = df["username"].apply(lambda x: "assistant" if x == chat_owner else "user")
     
     # Filter out media messages
     df = df[df["message"] != "<Media omitted>"].copy()
@@ -186,7 +186,7 @@ def process_instagram_folder(folder_path: Path, chat_owner: str, encoder) -> lis
     df = pd.DataFrame(rows)
     df["timestamp_previous"] = df["timestamp_s"].shift(periods=1)
     df["time_delta"] = (df["timestamp_s"] - df["timestamp_previous"]).fillna(0)
-    df["role"] = df["username"].apply(lambda x: "gpt" if x == chat_owner else "human")
+    df["role"] = df["username"].apply(lambda x: "assistant" if x == chat_owner else "user")
     
     # Merge consecutive same-sender messages
     df = collapse_messages(df, SAME_USER_THRESHOLD_SECONDS)
@@ -264,12 +264,12 @@ def segment_conversations(df: pd.DataFrame, encoder) -> list:
         # Check if we should start a new conversation
         if (row["time_delta"] < SAME_CONVO_THRESHOLD_SECONDS and 
             token_count + message_tokens < HISTORY_MAX_TOKENS):
-            current_convo.append({"from": row["role"], "value": row["message"]})
+            current_convo.append({"role": row["role"], "content": row["message"]})
             token_count += message_tokens
         else:
             if current_convo and token_count >= CONVO_MIN_TOKENS:
                 conversations.append({"conversations": current_convo})
-            current_convo = [{"from": row["role"], "value": row["message"]}]
+            current_convo = [{"role": row["role"], "content": row["message"]}]
             token_count = message_tokens
     
     # Don't forget the last conversation
@@ -286,7 +286,7 @@ def segment_conversations(df: pd.DataFrame, encoder) -> list:
 def main():
     """Main preprocessing pipeline."""
     print("=" * 70)
-    print("Unified Data Preprocessor (ShareGPT Format)")
+    print("Unified Data Preprocessor (Hugging Face Format)")
     print("=" * 70)
     print(f"\nChat owner: {CHAT_OWNER}")
     print(f"Output: {DATASET_OUTPUT}\n")
@@ -320,7 +320,7 @@ def main():
         print(f"   - Instagram: {INSTAGRAM_DIR}")
         return
     
-    # Write output in ShareGPT format
+    # Write output in standard Hugging Face format
     DATASET_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     with open(DATASET_OUTPUT, "w", encoding="utf-8") as f:
         for convo in all_conversations:
@@ -339,7 +339,7 @@ def main():
     print("=" * 70)
     
     # Show example
-    print("\nExample (ShareGPT format):\n")
+    print("\nExample (Hugging Face format):\n")
     example = all_conversations[0]
     print(json.dumps(example, indent=2, ensure_ascii=False)[:500])
     if len(json.dumps(example)) > 500:

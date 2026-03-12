@@ -2,7 +2,7 @@
 Train Model (Unsloth Optimized)
 ===========================
 Trains the model using settings from config.py.
-Uses ShareGPT format dataset with configurable chat templates.
+Uses standard chat format dataset with configurable chat templates.
 
 Usage:
     python scripts/train_model.py
@@ -12,7 +12,7 @@ import sys
 import torch
 from datasets import load_dataset
 from unsloth import FastLanguageModel, is_bfloat16_supported
-from unsloth.chat_templates import get_chat_template, standardize_sharegpt
+from unsloth.chat_templates import get_chat_template
 from trl import SFTTrainer
 from transformers import TrainingArguments
 from pathlib import Path
@@ -22,7 +22,9 @@ sys.path.append(str(Path(__file__).parent.parent))
 from config import (
     BASE_MODEL_ID, CHAT_TEMPLATE, DATASET_OUTPUT, MODEL_OUTPUT_DIR,
     MAX_LENGTH, BATCH_SIZE, GRADIENT_ACCUMULATION_STEPS,
-    LORA_R, LORA_ALPHA, EPOCHS, LEARNING_RATE
+    LORA_R, LORA_ALPHA, EPOCHS, LEARNING_RATE, RANDOM_SEED,
+    DATASET_NUM_PROC, PACKING, WARMUP_STEPS, LOGGING_STEPS,
+    OPTIMIZER, WEIGHT_DECAY, LR_SCHEDULER_TYPE, TARGET_MODULES, USE_4BIT
 )
 
 
@@ -33,7 +35,7 @@ def main():
         model_name=BASE_MODEL_ID,
         max_seq_length=MAX_LENGTH,
         dtype=None,  # Auto-detects bfloat16
-        load_in_4bit=True,
+        load_in_4bit=USE_4BIT,
     )
 
     # 2. Apply Chat Template
@@ -48,21 +50,17 @@ def main():
     model = FastLanguageModel.get_peft_model(
         model,
         r=LORA_R,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                        "gate_proj", "up_proj", "down_proj"],
+        target_modules=TARGET_MODULES,
         lora_alpha=LORA_ALPHA,
         lora_dropout=0,
         bias="none",
-        use_gradient_checkpointing="unsloth",  # Saves massive VRAM
-        random_state=3407,
+        use_gradient_checkpointing="unsloth",  # Saves VRAM
+        random_state=RANDOM_SEED,
     )
 
-    # 4. Load & Format Dataset (ShareGPT format)
+    # 4. Load & Format Dataset (Standard format)
     print(f"Loading dataset from {DATASET_OUTPUT}...")
     dataset = load_dataset("json", data_files=str(DATASET_OUTPUT), split="train")
-    
-    # Standardize from ShareGPT format (from/value -> role/content)
-    dataset = standardize_sharegpt(dataset)
 
     # Apply chat template to format conversations
     def formatting_func(examples):
@@ -87,27 +85,27 @@ def main():
         train_dataset=dataset,
         dataset_text_field="text",
         max_seq_length=MAX_LENGTH,
-        dataset_num_proc=2,
-        packing=True,  # Combines short messages to speed up training 5x
+        dataset_num_proc=DATASET_NUM_PROC,
+        packing=PACKING,  # Combines short messages to speed up training
         args=TrainingArguments(
             per_device_train_batch_size=BATCH_SIZE,
             gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
-            warmup_steps=50,
+            warmup_steps=WARMUP_STEPS,
             num_train_epochs=EPOCHS,
             learning_rate=LEARNING_RATE,
             fp16=not is_bfloat16_supported(),
             bf16=is_bfloat16_supported(),
-            logging_steps=10,
-            optim="adamw_8bit",  # Uses less memory
-            weight_decay=0.01,
-            lr_scheduler_type="linear",
-            seed=3407,
+            logging_steps=LOGGING_STEPS,
+            optim=OPTIMIZER, # Less memory
+            weight_decay=WEIGHT_DECAY,
+            lr_scheduler_type=LR_SCHEDULER_TYPE,
+            seed=RANDOM_SEED,
             output_dir=str(MODEL_OUTPUT_DIR),
             report_to="none",
         ),
     )
 
-    trainer_stats = trainer.train()
+    trainer.train()
 
     print(f"Saving to {MODEL_OUTPUT_DIR}...")
     model.save_pretrained(str(MODEL_OUTPUT_DIR))
