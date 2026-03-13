@@ -38,7 +38,7 @@ def load_model(
     finetuned_model_path=MODEL_OUTPUT_DIR,
     use_4bit=USE_4BIT,
 ):
-    print("🧠 Loading model...")
+    print("Loading model...")
     if use_4bit:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=USE_4BIT,
@@ -68,7 +68,7 @@ def load_model(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    print("✅ Model loaded successfully!")
+    print("Model loaded successfully!")
     return model, tokenizer
 
 
@@ -79,12 +79,12 @@ rag_helper = RAGHelper(
 )
 
 # ----------------- Prompt Formatter -----------------
-def format_qwen_prompt(conversation_history):
-    prompt = ""
-    for msg in conversation_history:
-        role = "user" if msg["role"] == "user" else "assistant"
-        prompt += f"<|im_start|>{role}\n{msg['content']}<|im_end|>\n"
-    prompt += "<|im_start|>assistant\n"
+def format_prompt(conversation_history):
+    prompt = tokenizer.apply_chat_template(
+        conversation_history,
+        tokenize=False,
+        add_generation_prompt=True
+    )
     return prompt
 
 
@@ -144,11 +144,11 @@ def you_bot_chat(
     while True:
         user_input = input("You: ").strip()
         if user_input.lower() in ["quit", "exit"]:
-            print("👋 Bye!")
+            print("Bye!")
             break
         if user_input.lower() == "clear":
             conversation_history = []
-            print("🧹 Conversation reset.\n")
+            print("Conversation reset.\n")
             continue
         if not user_input:
             continue
@@ -177,7 +177,7 @@ def you_bot_chat(
             )
 
         # Build full prompt
-        final_prompt = format_qwen_prompt(conversation_history)
+        final_prompt = format_prompt(conversation_history)
         if formatted_context:
             final_prompt = formatted_context + "\n" + final_prompt
 

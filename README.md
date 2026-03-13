@@ -1,10 +1,10 @@
-# 🤖 AI: Artificial Isaac
+# AI: Artificial Isaac
 
 **Fine-tune a Large Language Model to speak like you using your WhatsApp and Instagram chat history.**
 
 This project creates a personalized AI chatbot that mimics your communication style by fine-tuning Qwen3 on your messaging data, enhanced with RAG (Retrieval-Augmented Generation) for accurate personal information retrieval.
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54&style=plastic)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white&style=plastic)](https://pytorch.org/)
@@ -14,28 +14,24 @@ This project creates a personalized AI chatbot that mimics your communication st
 
 ---
 
-## ✨ Features
+## Features
 
 - **Multi-Platform Data Processing**: Import and process WhatsApp (.txt) and Instagram (JSON) chat exports
 - **Intelligent Message Merging**: Automatically combines consecutive messages from the same sender
-- **Qwen3 Fine-tuning**: Uses Qwen3-14B with LoRA (Low-Rank Adaptation) via Unsloth
-- **4-bit Quantization**: Efficient training on consumer GPUs (16GB+ VRAM)
 - **RAG Integration**: Semantic search over personal knowledge base for accurate information retrieval
 - **HTML Data Entry Tool**: Local browser-based survey for building your personal knowledge base
 - **Cloud Training via Modal**: Optional cloud GPU training for larger models or weaker local hardware
-- **Test Suite**: Automated tests for tokenization, data processing, and RAG pipeline
-- **Privacy-First**: All processing happens locally—your data never leaves your machine
 
 ---
 
-## 🎯 How It Works
+## How It Works
 
 ```
 1. Data Collection     →  Export chats from WhatsApp/Instagram
 2. Data Processing     →  Parse, clean, and format messages (preprocess_data.py)
 3. RAG Data Entry      →  Answer personal questions via HTML survey tool
 4. RAG Setup           →  Index personal knowledge in ChromaDB (setup_rag.py)
-5. Model Fine-tuning   →  Train Qwen3 with LoRA via Unsloth (train_model.py)
+5. Model Fine-tuning   →  Train your model of choice with LoRA via Unsloth (train_model.py)
 6. Inference           →  Interactive chatbot with RAG context (inference.py)
 ```
 
@@ -43,18 +39,18 @@ This project creates a personalized AI chatbot that mimics your communication st
 
 - **Communication Style**: The model learns your vocabulary, sentence structure, and conversational patterns
 - **Personal Context**: RAG retrieval ensures factual accuracy about your life, work, and interests
-- **Efficient Training**: LoRA + 4-bit quantization makes training feasible on consumer hardware
+- **Efficient Training**: LoRA + 4-bit quantization makes training feasible on less powerful hardware
 - **Conversation Dynamics**: Preserves natural dialogue flow and turn-taking
 
 ---
 
-## ⚡ Quick Start
+## Setup Tutorial
 
 See **[TUTORIAL.md](./TUTORIAL.md)** for the complete step-by-step guide.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Artificial-Isaac/
@@ -102,7 +98,10 @@ Artificial-Isaac/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
+
+
+> **Note:** The default parameters in `config.py` are currently set for an RTX 5090 (32GB VRAM). If you are using a different GPU, review and adjust the configuration values (such as model size, batch size, and sequence length) to match your hardware. See the table below for recommendations. For a detailed explanation of all training parameters and troubleshooting memory errors, see **[CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md)**.
 
 All parameters live in a single `config.py` file:
 
@@ -114,29 +113,27 @@ All parameters live in a single `config.py` file:
 | **RAG** | `RAG_N_RESULTS`, `MAX_RAG_CONTEXT_TOKENS` |
 | **Inference** | `INFERENCE_MAX_TOKENS`, `INFERENCE_TEMPERATURE` |
 
-### GPU Model Recommendations
+#### GPU Model Recommendations
 
-| GPU VRAM | Recommended Model | Config Value |
-|----------|-------------------|--------------|
-| 8GB | Qwen3-4B | `unsloth/Qwen3-4B` |
-| 12–16GB | Qwen3-4B or Qwen3-8B | `unsloth/Qwen3-8B-unsloth-bnb-4bit` |
-| 24GB+ | Qwen3-14B | `unsloth/Qwen3-14B-unsloth-bnb-4bit` |
-| 32GB+ | Qwen3-14B (full LoRA) | `unsloth/Qwen3-14B-unsloth-bnb-4bit` |
-| No GPU / weak GPU | Any model | Use `train_model_modal.py` for cloud training |
+| GPU VRAM | Recommended Maximum Number of Model Parameters | Recommended Model (as of March 2026) | Notes |
+| --- | --- | --- | --- |
+| **8GB** | 4B | `unsloth/Qwen3-4B` | Standard LoRA |
+| **12–16GB** | 8B | `unsloth/Qwen3-8B-unsloth-bnb-4bit` | 4-bit qLoRA |
+| **24GB** | 14B | `unsloth/Qwen3-14B-unsloth-bnb-4bit` | 4-bit qLoRA (standard params) |
+| **32GB+** | 14B | `unsloth/Qwen3-14B-unsloth-bnb-4bit` | 4-bit qLoRA (High-Rank / Max Batch) |
+| **None** | Any | Use `train_model_modal.py` | Cloud training via Modal |
 
-> ⚠️ **Avoid Qwen3.5 models** — they are Vision-Language Models that load a large vision encoder you don't need, wasting VRAM.
+> **Note on the 32GB Configuration:** To maximize training speed and model quality on higher-end GPUs, the 32GB profile intentionally skips some aggressive memory-saving techniques. It utilizes the extra VRAM for larger sequence lengths and data packing, prioritizing performance over memory efficiency.
 
----
+## Results & Evaluation
 
-## 📊 Results & Evaluation
+### Training Metrics
 
-### Training Metrics (Example)
-
-```
-Model: Qwen3-14B (4-bit)
-Dataset: 626 conversations
+```text
+Model: Qwen3-14B (4-bit qLoRA, High-Rank)
+Dataset: 150k tokens
 Training time: ~25 minutes (RTX 5090, 32GB)
-GPU memory: ~20GB peak
+GPU memory: ~30GB peak
 ```
 
 ### RAG Data Format
@@ -156,7 +153,7 @@ Generated by the HTML survey tool at `tools/rag_survey.html`.
 
 ---
 
-## 💬 Example Conversation
+## Example Conversation
 
 ```
 You: What is your name
@@ -171,7 +168,7 @@ Assistant: I am a person / Who likes going fast downhill / On two wheels, alive
 
 ---
 
-## ☁️ Cloud Training (Modal)
+## Cloud Training (Modal)
 
 Don't have a powerful GPU? Use [Modal](https://modal.com) to train on cloud GPUs (L40S, A100, H100):
 
@@ -193,7 +190,7 @@ See [TUTORIAL.md](./TUTORIAL.md#cloud-training-modal) for full details.
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -207,13 +204,13 @@ pytest tests/test_tokenization.py -v      # Downloads tokenizer (~500MB)
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **[Unsloth](https://unsloth.ai/)** for 2x faster fine-tuning
 - **[Modal](https://modal.com/)** for serverless cloud GPU infrastructure

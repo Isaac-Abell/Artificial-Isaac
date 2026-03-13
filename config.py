@@ -1,6 +1,7 @@
 """
 Global configuration for AI: Artificial Isaac
 Edit these values to customize your training pipeline.
+See CONFIGURATION_GUIDE.md for detailed explanations and memory troubleshooting.
 """
 
 from pathlib import Path
@@ -28,7 +29,7 @@ RAG_DATA_DIR = Path("rag_data")
 RAG_DATA_FILE = RAG_DATA_DIR / "biography.json"
 
 # ==============================
-# DATA PROCESSING
+# WHATSAPP/INSTAGRAM DATA PROCESSING
 # ==============================
 
 # Conversation grouping
@@ -69,14 +70,14 @@ LORA_DROPOUT = 0       # Unsloth recommends 0 (uses its own regularization)
 # Training Mechanics
 EPOCHS = 3
 LEARNING_RATE = 2e-4
-WARMUP_STEPS = 10      # Slightly more warmup for stability
+WARMUP_STEPS = 10
 LOGGING_STEPS = 1
 OPTIMIZER = "adamw_8bit"
 WEIGHT_DECAY = 0.01
-LR_SCHEDULER_TYPE = "cosine"  # Cosine annealing > linear for personality fine-tuning
+LR_SCHEDULER_TYPE = "cosine"
 
 DATASET_NUM_PROC = 2
-PACKING = True         # Faster training, fills GPU better
+PACKING = True
 USE_BF16 = True            
 USE_4BIT = True
 QUANT_TYPE = "nf4"

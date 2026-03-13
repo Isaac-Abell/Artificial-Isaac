@@ -121,12 +121,12 @@ def train(
     output_dir = f"{VOL_PATH}/finetuned_model"
     dataset_path = f"{VOL_PATH}/training_data/dataset.jsonl"
 
-    print(f"🧠 Model: {model_id}")
-    print(f"📊 Dataset: {dataset_path}")
-    print(f"🎯 Epochs: {epochs}")
-    print(f"💾 Output: {output_dir}")
-    print(f"🖥️ GPU: {torch.cuda.get_device_name(0)}")
-    print(f"📦 VRAM: {torch.cuda.get_device_properties(0).total_mem / 1e9:.1f} GB")
+    print(f"Model: {model_id}")
+    print(f"Dataset: {dataset_path}")
+    print(f"Epochs: {epochs}")
+    print(f"Output: {output_dir}")
+    print(f"GPU: {torch.cuda.get_device_name(0)}")
+    print(f"VRAM: {torch.cuda.get_device_properties(0).total_mem / 1e9:.1f} GB")
     print()
 
     # 1. Load model
@@ -207,8 +207,8 @@ def train(
     tokenizer.save_pretrained(output_dir)
     vol.commit()
 
-    print("✅ Training complete! Model saved to Modal volume.")
-    print(f"   Download with: modal volume get {VOLUME_NAME} finetuned_model/ ./finetuned_model/")
+    print("Training complete! Model saved to Modal volume.")
+    print(f"Download with: modal volume get {VOLUME_NAME} finetuned_model/ ./finetuned_model/")
 
 
 # ──────────────────────── Entrypoint ────────────────────────
@@ -230,16 +230,16 @@ def main(
         return
 
     # Upload dataset
-    print(f"📤 Uploading {dataset_path}...")
+    print(f"Uploading {dataset_path}...")
     data = dataset_path.read_bytes()
     upload_data.remote(data)
 
     # Train
-    print(f"\n🚀 Starting training on Modal ({gpu} x{gpu_count})...")
+    print(f"\nStarting training on Modal ({gpu} x{gpu_count})...")
     print(f"   Model: {model}")
     print(f"   Epochs: {epochs}")
     print()
     train.remote(model_id=model, epochs=epochs, gpu_count=gpu_count)
 
-    print(f"\n✅ Done! Download your model with:")
+    print(f"\nDone! Download your model with:")
     print(f"   modal volume get {VOLUME_NAME} finetuned_model/ ./finetuned_model/")

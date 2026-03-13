@@ -22,13 +22,11 @@ This guide walks you through every step of creating your personal AI chatbot.
 
 ### Hardware Requirements
 
-| GPU VRAM | Recommended Model | Training Time (est.) |
-|----------|-------------------|---------------------|
-| 8GB | `unsloth/Qwen3-4B` | ~15-20 mins |
-| 12–16GB | `unsloth/Qwen3-8B-unsloth-bnb-4bit` | ~20-25 mins |
-| 24–32GB | `unsloth/Qwen3-14B-unsloth-bnb-4bit` | ~25 mins (RTX 5090) |
-
-> ⚠️ **Do NOT use Qwen3.5 models** — they are Vision-Language Models that load a massive vision encoder you don't need. This wastes VRAM and can cause OOM errors. Use **Qwen3** (text-only) instead.
+| GPU VRAM | Recommended Maximum Number of Model Parameters | Recommended Model (as of March 2026) | Training Time (est. for 150k tokens) |
+| --- | --- | --- | --- |
+| **8GB** | 4B | `unsloth/Qwen3-4B` | ~15-20 mins |
+| **12–16GB** | 8B | `unsloth/Qwen3-8B-unsloth-bnb-4bit` | ~20-25 mins |
+| **24-32GB** | 14B | `unsloth/Qwen3-14B-unsloth-bnb-4bit` | ~25-30 mins |
 
 ### Software Requirements
 
@@ -73,7 +71,7 @@ source venv/bin/activate
 
 ### 3. Install Dependencies
 
-> ⚠️ **Order matters!** Install PyTorch with CUDA *first*, then everything else. If you install `requirements.txt` first, pip will pull in the CPU-only version of PyTorch and the CUDA install will skip with "Requirement already satisfied."
+> ⚠️ **Warning** Order matters! Install PyTorch with CUDA *first*, then everything else. If you install `requirements.txt` first, pip will pull in the CPU-only version of PyTorch and the CUDA install will skip with "Requirement already satisfied."
 
 ```bash
 # Step 1: Upgrade pip
@@ -169,9 +167,9 @@ Output: training_data\dataset.jsonl
 
 Loading tokenizer...
 
-📱 Processing 4 WhatsApp file(s)...
+Processing 4 WhatsApp file(s)...
   ✓ WhatsApp: 64 conversations
-📸 Processing 93 Instagram conversation(s)...
+Processing 93 Instagram conversation(s)...
   ✓ Instagram: 562 conversations
 
 ======================================================================
@@ -212,7 +210,7 @@ Only answered questions are included in the export.
 
 ### 3. Save Your Answers
 
-Click **💾 Save JSON** — your browser will download a `biography.json` file.
+Click **Save JSON** — your browser will download a `biography.json` file.
 
 Move it to the project:
 ```bash
@@ -222,7 +220,7 @@ move %USERPROFILE%\Downloads\biography.json rag_data\biography.json
 
 ### 4. Edit Later
 
-To update answers, click **📂 Load JSON**, select your existing `biography.json`, edit, and save again.
+To update answers, click **Load JSON**, select your existing `biography.json`, edit, and save again.
 
 ### Data Format
 
@@ -239,6 +237,8 @@ The file is a flat JSON array:
   }
 ]
 ```
+
+> **Note:** The questionnaire covers basic information, but adding your own custom questions and answers (either by tweaking the HTML or editing the JSON directly) builds a larger knowledge base for the RAG pipeline. This helps the AI actually knows what you know.
 
 ---
 
@@ -268,6 +268,8 @@ ChromaDB:  chroma_db
 ---
 
 ## Model Training (Local)
+
+> **Note:** The default parameters in `config.py` are set for an RTX 5090 (32GB VRAM). If you are using a different GPU, review and adjust the configuration values (such as model size, batch size, and sequence length) to match your hardware. For a detailed explanation of all training parameters and troubleshooting memory errors, see **[CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md)**.
 
 ### Choose Your Model
 
@@ -315,7 +317,7 @@ modal setup
 ### 2. Run Cloud Training
 
 ```bash
-# Deploys to Modal, uploads your data, and trains on an L40S (default)
+# Deploys to Modal, uploads your data, and trains your configured GPU
 modal run scripts/train_model_modal.py
 ```
 
@@ -336,16 +338,14 @@ Once training is complete, download the adapter weights to your local machine:
 modal volume get artificial-you-vol finetuned_model/ ./finetuned_model/
 ```
 
-> 💡 **Single GPU vs Multi-GPU**: Unsloth is highly optimized for **single-GPU** training. Multi-GPU training for LoRA often introduces overhead that makes it slower or more unstable. For the best performance on Modal, we recommend using a single powerful GPU (like the L40S or A100-80GB) rather than multiple smaller ones.
-
----Training saves checkpoints and the final model to `finetuned_model/`.
+> **Note**: Unsloth is highly optimized for **single-GPU** training. Multi-GPU training for LoRA often introduces overhead that makes it slower or more unstable. For the best performance on Modal, we recommend using a single powerful GPU (like the L40S or A100-80GB) rather than multiple smaller ones.
 
 ### Which Epoch to Use?
 
 | Epoch | Characteristics | Notes |
 |-------|----------------|-------|
 | 2–3 | More conservative, generalized | Best for stability |
-| 3–4 | ✅ **Balanced personality + safety** | **Recommended** |
+| 3–4 | **Balanced personality + safety** | **Recommended** |
 | 5+ | Strong personality, risk of overfitting | Use cautiously |
 
 ### Monitor GPU Usage
@@ -406,7 +406,7 @@ You: Do you mountain bike
 Assistant: Yes
 
 You: quit
-👋 Bye!
+Bye!
 ```
 
 The inference script automatically retrieves relevant RAG context for each query.

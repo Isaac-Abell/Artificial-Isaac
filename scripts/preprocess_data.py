@@ -88,7 +88,7 @@ def process_whatsapp_dir(whatsapp_dir: Path, chat_owner: str, encoder) -> list:
     
     # Extract zip files first
     for zip_path in whatsapp_dir.glob("*.zip"):
-        print(f"📦 Extracting {zip_path.name}...")
+        print(f"Extracting {zip_path.name}...")
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(whatsapp_dir)
     
@@ -96,13 +96,13 @@ def process_whatsapp_dir(whatsapp_dir: Path, chat_owner: str, encoder) -> list:
     if not txt_files:
         return []
     
-    print(f"\n📱 Processing {len(txt_files)} WhatsApp file(s)...")
+    print(f"\nProcessing {len(txt_files)} WhatsApp file(s)...")
     for txt_file in tqdm(txt_files, desc="WhatsApp"):
         try:
             conversations = process_whatsapp_file(txt_file, chat_owner, encoder)
             all_conversations.extend(conversations)
         except Exception as e:
-            print(f"  ⚠️ Error processing {txt_file.name}: {e}")
+            print(f"Error processing {txt_file.name}: {e}")
     
     return all_conversations
 
@@ -213,7 +213,7 @@ def process_instagram_dir(instagram_dir: Path, chat_owner: str, encoder) -> list
     if not folder_list:
         return []
     
-    print(f"\n📸 Processing {len(folder_list)} Instagram conversation(s)...")
+    print(f"\nProcessing {len(folder_list)} Instagram conversation(s)...")
     for folder in tqdm(sorted(folder_list), desc="Instagram"):
         conversations = process_instagram_folder(folder, chat_owner, encoder)
         all_conversations.extend(conversations)
@@ -351,14 +351,7 @@ def main():
     print(f"  Avg tokens/convo:     {total_tokens / len(all_conversations):.0f}")
     print(f"\nPreprocessing complete!")
     print(f"   Output saved to: {DATASET_OUTPUT}")
-    print("=" * 70)
-    
-    # Show example
-    print("\nExample (Hugging Face format):\n")
-    example = all_conversations[0]
-    print(json.dumps(example, indent=2, ensure_ascii=False)[:500])
-    if len(json.dumps(example)) > 500:
-        print("...")
+    print("=" * 70)   
 
 
 if __name__ == "__main__":
