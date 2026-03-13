@@ -13,10 +13,9 @@ import textwrap
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
-sys.path.append(str(Path(__file__).parent.parent))
-from rag.rag_helper import RAGHelper
+from artificial_isaac.rag.rag_helper import RAGHelper
 
-from config import (
+from artificial_isaac.config import (
     BASE_MODEL_ID,
     MODEL_OUTPUT_DIR,
     USE_4BIT,

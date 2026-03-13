@@ -19,8 +19,7 @@ from tqdm.auto import tqdm
 from transformers import AutoTokenizer
 
 # Add parent directory to path for config import
-sys.path.append(str(Path(__file__).parent.parent))
-from config import (
+from artificial_isaac.config import (
     WHATSAPP_DIR, INSTAGRAM_DIR, DATASET_OUTPUT, CHAT_OWNER,
     SAME_CONVO_THRESHOLD_SECONDS, SAME_USER_THRESHOLD_SECONDS,
     HISTORY_MAX_TOKENS, CONVO_MIN_TOKENS, TOKENIZER_ID

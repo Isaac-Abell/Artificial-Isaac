@@ -18,8 +18,7 @@ from transformers import TrainingArguments
 from pathlib import Path
 
 # Import config
-sys.path.append(str(Path(__file__).parent.parent))
-from config import (
+from artificial_isaac.config import (
     BASE_MODEL_ID, CHAT_TEMPLATE, DATASET_OUTPUT, MODEL_OUTPUT_DIR,
     MAX_LENGTH, BATCH_SIZE, GRADIENT_ACCUMULATION_STEPS,
     LORA_R, LORA_ALPHA, EPOCHS, LEARNING_RATE, RANDOM_SEED,

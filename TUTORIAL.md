@@ -90,8 +90,8 @@ pip install triton
 # Step 4: Install Unsloth (must match your PyTorch + CUDA version)
 pip install "unsloth[cu130-torch210] @ git+https://github.com/unslothai/unsloth.git"
 
-# Step 5: Install remaining dependencies
-pip install -r requirements.txt
+# Step 5: Install project in editable mode
+pip install -e .
 ```
 
 ### 4. Verify Installation

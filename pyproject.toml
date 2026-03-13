@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "artificial_isaac"
+version = "0.1.0"
+description = "Personalized AI chatbot with RAG fine-tuned on WhatsApp/Instagram data"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "transformers>=4.40.0",
+    "accelerate",
+    "peft",
+    "bitsandbytes",
+    "datasets",
+    "unsloth_zoo",
+    "triton-windows",
+    "pandas",
+    "numpy",
+    "whatstk",
+    "chromadb",
+    "sentence-transformers",
+    # "tqdm" # Usually included in others, but good to list if used directly
+]
+
+[tool.setuptools.packages.find]
+include = ["artificial_isaac*"]

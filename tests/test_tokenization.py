@@ -12,8 +12,7 @@ import sys
 import pytest
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+
 
 
 # Skip all tests in this file if env var is set (for CI or no-GPU setups)
@@ -27,7 +26,7 @@ pytestmark = pytest.mark.skipif(
 def tokenizer():
     """Load the tokenizer once for all tests in this module."""
     from transformers import AutoTokenizer
-    from config import TOKENIZER_ID
+    from artificial_isaac.config import TOKENIZER_ID
 
     tok = AutoTokenizer.from_pretrained(TOKENIZER_ID, trust_remote_code=True, use_fast=True)
     return tok

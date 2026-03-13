@@ -34,7 +34,7 @@ DEFAULT_GPU = "A100-80GB"  # Options: "T4", "L40S", "A100", "A100-80GB", "H100"
 DEFAULT_GPU_COUNT = 1 # Unsloth is optimized for single-GPU training.
 DEFAULT_EPOCHS = 3
 
-# Training hyperparameters (mirrors config.py)
+# Training hyperparameters (mirrors artificial_isaac/config.py)
 CHAT_TEMPLATE = "chatml"
 MAX_LENGTH = 2048
 BATCH_SIZE = 1
