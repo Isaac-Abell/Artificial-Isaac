@@ -4,6 +4,8 @@ accelerate
 peft
 bitsandbytes
 datasets
+unsloth_zoo
+triton-windows
 
 # Data Processing
 pandas
@@ -17,3 +19,6 @@ sentence-transformers
 # Utilities
 tqdm
 python-dotenv
+
+# Testing
+pytest

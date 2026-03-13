@@ -65,7 +65,15 @@ def process_whatsapp_file(txt_path: Path, chat_owner: str, encoder) -> list:
     df["role"] = df["username"].apply(lambda x: "assistant" if x == chat_owner else "user")
     
     # Filter out media messages
-    df = df[df["message"] != "<Media omitted>"].copy()
+    df = df[
+        (df["message"] != "<Media omitted>") & 
+        (df["message"] != "<This message was edited>") & 
+        (df["message"] != "<Deleted message>")
+    ].copy()
+
+    df["message"].replace("<This message was edited>", "", inplace=True)
+    df["message"].replace("<Deleted message>", "", inplace=True)
+    df["message"].replace("<Media omitted>", "", inplace=True)
     
     # Merge consecutive same-sender messages
     df = collapse_messages(df, SAME_USER_THRESHOLD_SECONDS)
@@ -328,12 +336,19 @@ def main():
     
     # Statistics
     total_messages = sum(len(c["conversations"]) for c in all_conversations)
+    total_tokens = sum(
+        len(encoder.encode(msg["content"], add_special_tokens=False))
+        for c in all_conversations
+        for msg in c["conversations"]
+    )
     print("\n" + "=" * 70)
     print("Statistics:")
     print("=" * 70)
     print(f"  Total conversations:  {len(all_conversations):,}")
     print(f"  Total messages:       {total_messages:,}")
     print(f"  Avg messages/convo:   {total_messages / len(all_conversations):.1f}")
+    print(f"  Total tokens:         {total_tokens:,}")
+    print(f"  Avg tokens/convo:     {total_tokens / len(all_conversations):.0f}")
     print(f"\nPreprocessing complete!")
     print(f"   Output saved to: {DATASET_OUTPUT}")
     print("=" * 70)

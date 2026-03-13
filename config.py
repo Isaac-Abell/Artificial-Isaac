@@ -25,6 +25,7 @@ DATASET_OUTPUT = TRAINING_DATA_DIR / "dataset.jsonl"
 MODEL_OUTPUT_DIR = Path("finetuned_model")
 CHROMA_DB_DIR = Path("chroma_db")
 RAG_DATA_DIR = Path("rag_data")
+RAG_DATA_FILE = RAG_DATA_DIR / "biography.json"
 
 # ==============================
 # DATA PROCESSING
@@ -43,11 +44,10 @@ CONVO_MIN_TOKENS = 75      # Minimum tokens to include conversation
 # ==============================
 
 # Base model (Unsloth 4-bit quantized models recommended)
-BASE_MODEL_ID = "unsloth/Qwen3.5-27B-bnb-4bit"
-# (Or "unsloth/Qwen3.5-27B-bnb-4bit")
+BASE_MODEL_ID = "unsloth/Qwen3-14B-unsloth-bnb-4bit"
 
 # Tokenizer for preprocessing (should match base model family)
-TOKENIZER_ID = "Qwen/Qwen3.5-27B"
+TOKENIZER_ID = "unsloth/Qwen3-14B-unsloth-bnb-4bit"
 
 # Chat template for training (unsloth.chat_templates)
 # Options: "chatml", "llama-3", "mistral", "gemma", "phi-3", "zephyr", "alpaca"
@@ -59,29 +59,29 @@ CHAT_TEMPLATE = "chatml"
 RANDOM_SEED = 67
 MAX_LENGTH = 2048
 BATCH_SIZE = 1
-GRADIENT_ACCUMULATION_STEPS = 4
+GRADIENT_ACCUMULATION_STEPS = 8  # Effective batch size = 8 (smoother training)
 
 # LoRA Optimization
-LORA_R = 32
-LORA_ALPHA = 64
-LORA_DROPOUT = 0.05
+LORA_R = 64            # Higher rank = more expressive adaptation
+LORA_ALPHA = 128       # 2x LORA_R is the standard ratio
+LORA_DROPOUT = 0       # Unsloth recommends 0 (uses its own regularization)
 
 # Training Mechanics
 EPOCHS = 3
 LEARNING_RATE = 2e-4
-WARMUP_STEPS = 5
+WARMUP_STEPS = 10      # Slightly more warmup for stability
 LOGGING_STEPS = 1
 OPTIMIZER = "adamw_8bit"
 WEIGHT_DECAY = 0.01
-LR_SCHEDULER_TYPE = "linear"
+LR_SCHEDULER_TYPE = "cosine"  # Cosine annealing > linear for personality fine-tuning
 
 DATASET_NUM_PROC = 2
-PACKING = True   
+PACKING = True         # Faster training, fills GPU better
 USE_BF16 = True            
 USE_4BIT = True
 QUANT_TYPE = "nf4"
 
-# LoRA Target Modules
+# LoRA Target Modules (all attention + MLP = best style capture)
 TARGET_MODULES = [
     "q_proj", "k_proj", "v_proj", "o_proj",
     "gate_proj", "up_proj", "down_proj"

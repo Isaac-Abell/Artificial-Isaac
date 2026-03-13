@@ -1,36 +1,50 @@
 """
-Merge Datasets
-===============
-Combines WhatsApp and Instagram datasets into a single training file.
+Setup RAG
+=========
+Indexes the Q&A biography data into ChromaDB for retrieval.
 
 Usage:
     python scripts/setup_rag.py
 """
 
-import json
 import sys
 from pathlib import Path
 
 # Add parent directory to path for config import
 sys.path.append(str(Path(__file__).parent.parent))
-from rag.rag_helper import GranularRAGHelper
+from rag.rag_helper import RAGHelper
 from config import (
-    RAG_COLLECTION_NAME
+    CHROMA_DB_DIR,
+    RAG_COLLECTION_NAME,
+    RAG_DATA_FILE,
 )
 
+
 def main():
-    rag_helper = GranularRAGHelper(persist_directory="./chroma_db", collection_name="personal_rag")
+    print("=" * 60)
+    print("RAG Setup — Indexing Q&A Data")
+    print("=" * 60)
+    print(f"\nData file: {RAG_DATA_FILE}")
+    print(f"ChromaDB:  {CHROMA_DB_DIR}\n")
+
+    rag_helper = RAGHelper(
+        persist_directory=str(CHROMA_DB_DIR),
+        collection_name=RAG_COLLECTION_NAME,
+    )
+
+    # Clear old data first
+    rag_helper.clear_collection()
+
     try:
-        rag_helper.index_directory(RAG_COLLECTION_NAME)
-        print("✓ Indexing successful")
-        
-        # Check collection stats
-        count = rag_helper.collection.count()
-        print(f"✓ Total indexed chunks: {count}")
-        
+        count = rag_helper.index_qa_file(str(RAG_DATA_FILE))
+        print(f"\n✓ Total indexed chunks: {count}")
         return True
+    except FileNotFoundError as e:
+        print(f"\n✗ {e}")
+        print(f"  Run the RAG Survey tool (tools/rag_survey.html) to create your data.")
+        return False
     except Exception as e:
-        print(f"✗ Indexing failed: {e}")
+        print(f"\n✗ Indexing failed: {e}")
         return False
 
 

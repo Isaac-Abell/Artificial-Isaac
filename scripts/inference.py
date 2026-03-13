@@ -7,15 +7,15 @@ terminal session with RAG-enhanced personal knowledge retrieval.
 Usage:
     python scripts/inference.py
 """
-
+import sys
+from pathlib import Path
+import textwrap
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
-from rag.rag_helper import GranularRAGHelper
-from pathlib import Path
-import textwrap
-import sys
 sys.path.append(str(Path(__file__).parent.parent))
+from rag.rag_helper import RAGHelper
+
 from config import (
     BASE_MODEL_ID,
     MODEL_OUTPUT_DIR,
@@ -28,7 +28,8 @@ from config import (
     MAX_RAG_CONTEXT_TOKENS,
     INFERENCE_MAX_TOKENS,
     INFERENCE_TEMPERATURE,
-    INFERENCE_TOP_P
+    INFERENCE_TOP_P,
+    USE_4BIT
 )
 
 # ----------------- Model Loader -----------------
@@ -40,7 +41,7 @@ def load_model(
     print("🧠 Loading model...")
     if use_4bit:
         bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
+            load_in_4bit=USE_4BIT,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type=QUANT_TYPE,
             bnb_4bit_compute_dtype=torch.bfloat16 if USE_BF16 else torch.float16,
@@ -72,7 +73,7 @@ def load_model(
 
 
 # ----------------- RAG Helper -----------------
-rag_helper = GranularRAGHelper(
+rag_helper = RAGHelper(
     persist_directory=str(CHROMA_DB_DIR),
     collection_name=RAG_COLLECTION_NAME,
 )

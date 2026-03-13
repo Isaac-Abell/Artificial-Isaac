@@ -2,7 +2,7 @@
 
 **Fine-tune a Large Language Model to speak like you using your WhatsApp and Instagram chat history.**
 
-This project demonstrates how to create a personalized AI chatbot that mimics your communication style by fine-tuning Qwen 2.5 (7B) on your messaging data, enhanced with RAG (Retrieval-Augmented Generation) for accurate personal information retrieval.
+This project creates a personalized AI chatbot that mimics your communication style by fine-tuning Qwen3 on your messaging data, enhanced with RAG (Retrieval-Augmented Generation) for accurate personal information retrieval.
 
 ## 🛠️ Technologies Used
 
@@ -10,238 +10,202 @@ This project demonstrates how to create a personalized AI chatbot that mimics yo
 [![PyTorch](https://img.shields.io/badge/PyTorch-%23EE4C2C.svg?style=for-the-badge&logo=PyTorch&logoColor=white&style=plastic)](https://pytorch.org/)
 [![Transformers](https://img.shields.io/badge/🤗-Transformers-orange.svg)](https://huggingface.co/transformers/)
 [![ChromaDB](https://img.shields.io/badge/💾-ChromaDB-green.svg)](https://www.trychroma.com/)
-
----
-
-## 📋 Table of Contents
-
-- [Features](#-features)
-- [Project Overview](#-project-overview)
-- [Installation](#-installation)
-- [Quick Start](#-quick-start)
-- [Detailed Workflow](#-detailed-workflow)
-- [Project Structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Results & Evaluation](#-results--evaluation)
-- [Advanced Usage](#-advanced-usage)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Acknowledgments](#-acknowledgments)
+[![Unsloth](https://img.shields.io/badge/🦥-Unsloth-blue.svg)](https://unsloth.ai/)
 
 ---
 
 ## ✨ Features
 
-- **Multi-Platform Data Processing**: Import and process WhatsApp and Instagram chat exports
+- **Multi-Platform Data Processing**: Import and process WhatsApp (.txt) and Instagram (JSON) chat exports
 - **Intelligent Message Merging**: Automatically combines consecutive messages from the same sender
-- **Qwen 2.5 Fine-tuning**: Uses 7B parameter model with LoRA (Low-Rank Adaptation)
+- **Qwen3 Fine-tuning**: Uses Qwen3-14B with LoRA (Low-Rank Adaptation) via Unsloth
 - **4-bit Quantization**: Efficient training on consumer GPUs (16GB+ VRAM)
 - **RAG Integration**: Semantic search over personal knowledge base for accurate information retrieval
+- **HTML Data Entry Tool**: Local browser-based survey for building your personal knowledge base
+- **Cloud Training via Modal**: Optional cloud GPU training for larger models or weaker local hardware
+- **Test Suite**: Automated tests for tokenization, data processing, and RAG pipeline
 - **Privacy-First**: All processing happens locally—your data never leaves your machine
 
 ---
 
-## 🎯 Project Overview
-
-This project follows a complete ML pipeline:
+## 🎯 How It Works
 
 ```
 1. Data Collection     →  Export chats from WhatsApp/Instagram
-2. Data Processing     →  Parse, clean, and format messages
-3. Format Conversion   →  Convert to Qwen chat format
-4. Message Merging     →  Combine consecutive same-role messages
-5. Model Fine-tuning   →  Train Qwen 2.5 with LoRA
-6. RAG Setup           →  Index personal knowledge in ChromaDB
-7. Evaluation          →  Test and compare model outputs
-8. Deployment          →  Interactive chatbot
+2. Data Processing     →  Parse, clean, and format messages (preprocess_data.py)
+3. RAG Data Entry      →  Answer personal questions via HTML survey tool
+4. RAG Setup           →  Index personal knowledge in ChromaDB (setup_rag.py)
+5. Model Fine-tuning   →  Train Qwen3 with LoRA via Unsloth (train_model.py)
+6. Inference           →  Interactive chatbot with RAG context (inference.py)
 ```
 
 ### Why This Works
 
 - **Communication Style**: The model learns your vocabulary, sentence structure, and conversational patterns
 - **Personal Context**: RAG retrieval ensures factual accuracy about your life, work, and interests
-- **Efficient Training**: LoRA + quantization makes training feasible on consumer hardware
+- **Efficient Training**: LoRA + 4-bit quantization makes training feasible on consumer hardware
 - **Conversation Dynamics**: Preserves natural dialogue flow and turn-taking
 
 ---
 
-## 🚀 Installation
+## ⚡ Quick Start
 
-### Prerequisites
-
-- **Python 3.11**
-- **CUDA-capable GPU** with 16GB+ VRAM (recommended: RTX RTX 4080, or better)
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/Isaac-Abell/AI-Artifical-Isaac.git
-cd AI-Artifical-Isaac
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Visit https://pytorch.org/get-started/locally/ for your specific version
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Verify installation
-python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
-```
-
-### Requirements
-
-The project uses these key libraries (see `requirements.txt` for full list):
-
-- `transformers>=4.40.0` - Hugging Face model library
-- `torch` - PyTorch for training
-- `peft` - Parameter-Efficient Fine-Tuning
-- `bitsandbytes` - Quantization support
-- `chromadb` - Vector database for RAG
-- `whatstk` - WhatsApp chat parser
-- `pandas`, `tqdm` - Data processing utilities
+See **[TUTORIAL.md](./TUTORIAL.md)** for the complete step-by-step guide.
 
 ---
-
-## ⚡ Instructions
-
-### See [TUTORIAL.md](./TUTORIAL.md)
 
 ## 📁 Project Structure
 
 ```
-AI-Artifical-Isaac/
+Artificial-Isaac/
+│
+├── config.py                      # All configurable parameters
+│
+├── scripts/                       # Executable scripts
+│   ├── preprocess_data.py         # WhatsApp + Instagram → training JSONL
+│   ├── train_model.py             # Fine-tune with Unsloth + LoRA (local)
+│   ├── train_model_modal.py       # Fine-tune on Modal cloud GPUs
+│   ├── setup_rag.py               # Index biography.json into ChromaDB
+│   └── inference.py               # Interactive chat with RAG
+│
+├── rag/                           # RAG module
+│   └── rag_helper.py              # ChromaDB indexing + querying
+│
+├── tools/                         # Utilities
+│   └── rag_survey.html            # Local HTML tool for RAG data entry
+│
+├── tests/                         # Test suite
+│   ├── conftest.py                # Shared fixtures
+│   ├── test_tokenization.py       # Tokenizer tests
+│   ├── test_data_processing.py    # JSON parsing tests
+│   └── test_rag.py                # RAG pipeline tests
 │
 ├── data/                          # Raw data (gitignored)
 │   ├── whatsapp/                  # WhatsApp .txt exports
 │   └── instagram/inbox/           # Instagram JSON folders
 │
-├── scripts/                       # All executable scripts
-│   ├── whatsapp_preprocessor.py
-│   ├── instagram_preprocessor.py
-│   ├── merge_datasets.py
-│   ├── llama_to_qwen_converter.py
-│   ├── clean_and_merge.py
-│   ├── train_qwen.py
-│   ├── setup_rag.py
-│   └── inference.py
+├── rag_data/                      # Personal knowledge base (gitignored)
+│   └── biography.json             # Generated by rag_survey.html
 │
-├── rag_data/                      # Personal knowledge base
-│   ├── core/
-│   ├── professional/
-│   ├── projects/
-│   ├── interests/
-│   ├── worldview/
-│   └── life/
+├── training_data/                 # Processed datasets (gitignored)
+│   └── dataset.jsonl              # Output of preprocess_data.py
 │
-├── training_data/                 # Processed datasets
-│   ├── whatsapp_finetune.jsonl
-│   ├── instagram_finetune.jsonl
-│   ├── dataset_combined.jsonl
-│   ├── dataset_qwen.jsonl
-│   └── dataset_qwen_cleaned.jsonl
-│
-├── qwen2.5_7b_finetuned/         # Model checkpoints
-│   ├── checkpoint-xxx/
-│   ├── checkpoint-xxx/
-│   └── checkpoint-xxx/
-│
-├── chroma_db/                     # RAG vector database
+├── finetuned_model/               # LoRA adapter weights (gitignored)
+├── chroma_db/                     # RAG vector database (gitignored)
 │
 ├── requirements.txt
 ├── README.md
 ├── TUTORIAL.md
-├── LICENSE
-└── .gitignore
+├── TODO.md
+└── LICENSE
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-### Global Settings
+All parameters live in a single `config.py` file:
 
-Edit `scripts/config.py` to customize parameters:
+| Section | Key Parameters |
+|---------|----------------|
+| **Identity** | `CHAT_OWNER` — your name as it appears in chats |
+| **Model** | `BASE_MODEL_ID` — Hugging Face model to fine-tune |
+| **Training** | `LORA_R`, `LORA_ALPHA`, `EPOCHS`, `LEARNING_RATE`, `MAX_LENGTH` |
+| **RAG** | `RAG_N_RESULTS`, `MAX_RAG_CONTEXT_TOKENS` |
+| **Inference** | `INFERENCE_MAX_TOKENS`, `INFERENCE_TEMPERATURE` |
 
-### Per-Script Configuration
+### GPU Model Recommendations
 
-Each script has a `CONFIG` section at the top for easy customization.
+| GPU VRAM | Recommended Model | Config Value |
+|----------|-------------------|--------------|
+| 8GB | Qwen3-4B | `unsloth/Qwen3-4B` |
+| 12–16GB | Qwen3-4B or Qwen3-8B | `unsloth/Qwen3-8B-unsloth-bnb-4bit` |
+| 24GB+ | Qwen3-14B | `unsloth/Qwen3-14B-unsloth-bnb-4bit` |
+| 32GB+ | Qwen3-14B (full LoRA) | `unsloth/Qwen3-14B-unsloth-bnb-4bit` |
+| No GPU / weak GPU | Any model | Use `train_model_modal.py` for cloud training |
+
+> ⚠️ **Avoid Qwen3.5 models** — they are Vision-Language Models that load a large vision encoder you don't need, wasting VRAM.
 
 ---
 
 ## 📊 Results & Evaluation
 
-### Training Metrics
-
-Example from a real training run:
+### Training Metrics (Example)
 
 ```
-Dataset: 1287 conversations (cleaned)
-Total tokens: ~375k
-Training time: ~7.5 hours (RTX 4080)
-GPU memory: 15.8GB peak
-Final loss: 2.23
+Model: Qwen3-14B (4-bit)
+Dataset: 626 conversations
+Training time: ~25 minutes (RTX 5090, 32GB)
+GPU memory: ~20GB peak
 ```
----
 
-## 🔬 Advanced Usage
+### RAG Data Format
 
-### Custom RAG Data
-
-Create new categories in `rag_data/`:
+Personal knowledge is stored as a flat JSON array:
 
 ```json
-{
-  "content": [
-    {
-      "type": "skill",
-      "title": "Python",
-      "details": "Expert level, 5 years experience..."
-    }
-  ]
-}
-```
-
-Or use nested JSON:
-
-```json
-{
-  "content": {
-    "primary_languages": [
-      {
-        "name": "Python",
-        "proficiency": "Expert",
-        "years_experience": 5
-      }
-    ]
+[
+  {
+    "question": "Where did you grow up?",
+    "answer": "I grew up in Seattle, WA. I loved the rain but hated the traffic."
   }
-}
+]
 ```
+
+Generated by the HTML survey tool at `tools/rag_survey.html`.
+
+---
 
 ## 💬 Example Conversation
 
-Here’s a sample interaction with **Artificial Isaac** after fine-tuning and RAG setup:
-
 ```
-You: Hello, who are you?
-Artificial Isaac: I'm Isaac Abell, a 21 year old dual citizen of Canada and the US. I was born in NYC but live in Toronto now.
+You: What is your name
+Assistant: Isaac
 
-You: Tell me about some programming projects you have made?
-Artificial Isaac: I built a chatbot that uses RAG to answer questions
+You: Do you mountain bike
+Assistant: Yes
 
-You: lmao you are crazy
-Artificial Isaac: Lol And a website to visualize algorithms
-
-You: Do you like to mountain bike
-Artificial Isaac: Yes
-
-You: what bike do you have
-Artificial Isaac: A Propain Spindrift 4
+You: generate a haiku about who you are
+Assistant: I am a person / Who likes going fast downhill / On two wheels, alive
 ```
+
+---
+
+## ☁️ Cloud Training (Modal)
+
+Don't have a powerful GPU? Use [Modal](https://modal.com) to train on cloud GPUs (L40S, A100, H100):
+
+```bash
+pip install modal
+modal setup                    # One-time auth
+
+# Train with defaults (Qwen3-14B on L40S)
+modal run scripts/train_model_modal.py
+
+# Train a bigger model on A100
+modal run scripts/train_model_modal.py --model "unsloth/Qwen3-32B-unsloth-bnb-4bit" --gpu "A100-80GB"
+
+# Download the trained model
+modal volume get artificial-you-vol finetuned_model/ ./finetuned_model/
+```
+
+See [TUTORIAL.md](./TUTORIAL.md#cloud-training-modal) for full details.
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run individual test suites
+pytest tests/test_data_processing.py -v   # No GPU needed
+pytest tests/test_rag.py -v               # No GPU needed
+pytest tests/test_tokenization.py -v      # Downloads tokenizer (~500MB)
+```
+
+---
 
 ## 📜 License
 
@@ -251,10 +215,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Hugging Face** for transformers and PEFT libraries
+- **[Unsloth](https://unsloth.ai/)** for 2x faster fine-tuning
+- **[Modal](https://modal.com/)** for serverless cloud GPU infrastructure
+- **Hugging Face** for Transformers and PEFT libraries
 - **Qwen Team** for the excellent base models
 - **ChromaDB** for semantic search infrastructure
 - **whatstk** for WhatsApp parsing utilities
-- The open-source ML community for making this accessible
-
----
