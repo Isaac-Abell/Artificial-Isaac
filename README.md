@@ -89,7 +89,6 @@ Artificial-Isaac/
 ├── finetuned_model/               # LoRA adapter weights (gitignored)
 ├── chroma_db/                     # RAG vector database (gitignored)
 │
-├── requirements.txt
 ├── pyproject.toml
 ├── README.md
 ├── TUTORIAL.md

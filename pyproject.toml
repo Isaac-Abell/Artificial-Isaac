@@ -21,7 +21,9 @@ dependencies = [
     "whatstk",
     "chromadb",
     "sentence-transformers",
-    # "tqdm" # Usually included in others, but good to list if used directly
+    "tqdm",
+    "python-dotenv",
+    "pytest"
 ]
 
 [tool.setuptools.packages.find]

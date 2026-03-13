@@ -71,7 +71,7 @@ source venv/bin/activate
 
 ### 3. Install Dependencies
 
-> ⚠️ **Warning** Order matters! Install PyTorch with CUDA *first*, then everything else. If you install `requirements.txt` first, pip will pull in the CPU-only version of PyTorch and the CUDA install will skip with "Requirement already satisfied."
+> ⚠️ **Warning** Order matters! Install PyTorch with CUDA *first*, then everything else. If you install the project dependencies first, pip will pull in the CPU-only version of PyTorch and the CUDA install will skip with "Requirement already satisfied."
 
 ```bash
 # Step 1: Upgrade pip
@@ -417,7 +417,7 @@ The inference script automatically retrieves relevant RAG context for each query
 
 ### PyTorch Shows CUDA False
 
-**Cause:** CPU-only PyTorch was installed (usually because `requirements.txt` was installed before the CUDA version).
+**Cause:** CPU-only PyTorch was installed (usually because dependencies were installed before the CUDA version).
 
 **Fix:**
 ```bash
@@ -500,7 +500,7 @@ pip install --upgrade pip
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
 pip install triton-windows               # or: pip install triton (Linux)
 pip install "unsloth[cu130-torch210] @ git+https://github.com/unslothai/unsloth.git"
-pip install -r requirements.txt
+pip install -e .
 
 # 2. Verify
 python -c "import torch; print(torch.cuda.is_available())"
