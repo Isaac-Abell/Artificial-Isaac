@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artificial Isaac — RAG Survey</title>
+  <style>
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --surface-light: #1f2f50;
+      --accent: #e94560;
+      --accent-hover: #ff6b81;
+      --text: #eaeaea;
+      --text-muted: #8892a4;
+      --border: #2a3a5c;
+      --success: #2ecc71;
+      --radius: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.3rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.6rem 1.4rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.97); }
+
+    .btn-save {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-save:hover { background: var(--accent-hover); }
+
+    .btn-load {
+      background: var(--surface-light);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-load:hover { background: var(--border); }
+
+    .btn-clear {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-clear:hover { background: var(--surface-light); color: var(--text); }
+
+    #load-input { display: none; }
+
+    .stats {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .stats span { color: var(--accent); font-weight: 600; }
+
+    .category {
+      margin-bottom: 2rem;
+    }
+
+    .category h2 {
+      font-size: 1.2rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .question-block {
+      margin-bottom: 1rem;
+    }
+
+    .question-block label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+
+    .question-block textarea {
+      width: 100%;
+      min-height: 70px;
+      padding: 0.6rem 0.8rem;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    .question-block textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .question-block textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 0.8rem 1.4rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.9rem;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { background: var(--success); color: #fff; }
+    .toast.info { background: var(--surface-light); color: var(--text); border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🤖 Artificial Isaac — RAG Survey</h1>
+    <p>Answer these questions to build your AI's long-term memory.<br>Only answered questions are exported.</p>
+  </header>
+
+  <div class="toolbar">
+    <button class="btn-save" onclick="saveJSON()">💾 Save JSON</button>
+    <button class="btn-load" onclick="document.getElementById('load-input').click()">📂 Load JSON</button>
+    <input type="file" id="load-input" accept=".json" onchange="loadJSON(event)" />
+    <button class="btn-clear" onclick="clearAll()">🗑️ Clear All</button>
+  </div>
+
+  <div class="stats" id="stats">Answered: <span>0</span> / <span>0</span></div>
+
+  <div id="survey"></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+// ===== QUESTIONS =====
+const QUESTIONS = [
+  // 1. Identity & Biography
+  { category: "Identity & Biography", question: "What is your full name?" },
+  { category: "Identity & Biography", question: "What is your preferred name or nickname?" },
+  { category: "Identity & Biography", question: "What is your current location (city, country)?" },
+  { category: "Identity & Biography", question: "Where is your hometown? What do you like/dislike about it?" },
+  { category: "Identity & Biography", question: "What is your age or birthdate?" },
+  { category: "Identity & Biography", question: "What is your education history? (Degrees, schools, major)" },
+  { category: "Identity & Biography", question: "What are your key childhood memories?" },
+  { category: "Identity & Biography", question: "What are the most significant events in your life?" },
+  { category: "Identity & Biography", question: "What is your relationship status?" },
+  { category: "Identity & Biography", question: "What is your significant other's name?" },
+  { category: "Identity & Biography", question: "Who are your family members? (Parents, siblings)" },
+  { category: "Identity & Biography", question: "Who are your best friends?" },
+  { category: "Identity & Biography", question: "Do you have pets? (Name, type, breed, personality)" },
+
+  // 2. Professional & Career
+  { category: "Professional & Career", question: "What is your current job title?" },
+  { category: "Professional & Career", question: "What company/industry do you work in?" },
+  { category: "Professional & Career", question: "What are your key responsibilities?" },
+  { category: "Professional & Career", question: "Do you like your job? Why or why not?" },
+  { category: "Professional & Career", question: "What are your past companies and roles?" },
+  { category: "Professional & Career", question: "What are your significant achievements? (Projects, awards)" },
+  { category: "Professional & Career", question: "What was your worst job experience? Why was it bad?" },
+  { category: "Professional & Career", question: "What is your preferred work environment? (Remote, office, hybrid) Why?" },
+  { category: "Professional & Career", question: "What are your work hours preferences? Why?" },
+  { category: "Professional & Career", question: "What is your leadership style? Why?" },
+  { category: "Professional & Career", question: "What are your career goals and ambitions? Where do you see yourself in 5 years?" },
+
+  // 3. Skills & Expertise
+  { category: "Skills & Expertise", question: "What are your top 3 professional skills? Why?" },
+  { category: "Skills & Expertise", question: "What are you 'known for' among colleagues or friends?" },
+  { category: "Skills & Expertise", question: "Do you have any hidden talents? (Juggling, magic, speed-reading?)" },
+  { category: "Skills & Expertise", question: "List your specific skills and proficiencies. (Software, languages, equipment)" },
+  { category: "Skills & Expertise", question: "Do you have strong opinions on specific methods or tools?" },
+  { category: "Skills & Expertise", question: "What are your workflow preferences?" },
+  { category: "Skills & Expertise", question: "What are you currently learning? Why?" },
+  { category: "Skills & Expertise", question: "What skill do you wish you had? Why?" },
+  { category: "Skills & Expertise", question: "How do you learn best? (Books, videos, doing it)" },
+
+  // 4. Interests & Hobbies
+  { category: "Interests & Hobbies", question: "What are your favorite sports to watch? Why?" },
+  { category: "Interests & Hobbies", question: "What are your favorite teams? Why?" },
+  { category: "Interests & Hobbies", question: "Who are your favorite athletes? Why?" },
+  { category: "Interests & Hobbies", question: "Do you play any sports? Which ones, skill level, gear?" },
+  { category: "Interests & Hobbies", question: "What is your workout routine? (Gym, running, yoga, etc.)" },
+  { category: "Interests & Hobbies", question: "Do you play video games? Favorite genres?" },
+  { category: "Interests & Hobbies", question: "What are your favorite specific game titles? Why?" },
+  { category: "Interests & Hobbies", question: "Console or PC? Competitive or casual? In-game username?" },
+  { category: "Interests & Hobbies", question: "What are your favorite music genres and artists? Why?" },
+  { category: "Interests & Hobbies", question: "What are your favorite movies? Why?" },
+  { category: "Interests & Hobbies", question: "What are your favorite TV shows? Why?" },
+  { category: "Interests & Hobbies", question: "What are you currently reading or listening to? Why?" },
+  { category: "Interests & Hobbies", question: "Who are your favorite content creators or YouTubers? Why?" },
+  { category: "Interests & Hobbies", question: "What are your favorite foods?" },
+  { category: "Interests & Hobbies", question: "What are your favorite drinks? (Alcoholic and non-alcoholic)" },
+  { category: "Interests & Hobbies", question: "Do you have dietary restrictions or preferences?" },
+  { category: "Interests & Hobbies", question: "Can you cook? What is your signature dish?" },
+
+  // 5. Personality & Opinions
+  { category: "Personality & Opinions", question: "Are you an introvert or extrovert?" },
+  { category: "Personality & Opinions", question: "Are you an optimist or pessimist?" },
+  { category: "Personality & Opinions", question: "Are you a morning person or night owl?" },
+  { category: "Personality & Opinions", question: "Are you clean or messy?" },
+  { category: "Personality & Opinions", question: "What is your general political leaning?" },
+  { category: "Personality & Opinions", question: "What are your religious or spiritual beliefs?" },
+  { category: "Personality & Opinions", question: "What are your controversial opinions?" },
+  { category: "Personality & Opinions", question: "What are your core values?" },
+  { category: "Personality & Opinions", question: "Do you use slang or emojis? What are your favorite catchphrases?" },
+  { category: "Personality & Opinions", question: "Are you sarcastic or serious?" },
+  { category: "Personality & Opinions", question: "Describe your texting style. (Short/long, fast/slow)" },
+
+  // 6. Travel & Experiences
+  { category: "Travel & Experiences", question: "What is your favorite place you've visited?" },
+  { category: "Travel & Experiences", question: "Describe your most meaningful trips." },
+  { category: "Travel & Experiences", question: "What is your dream destination?" },
+  { category: "Travel & Experiences", question: "What is your travel style? (Backpacking, luxury, adventure)" },
+  { category: "Travel & Experiences", question: "What are your top 3 bucket list items?" },
+];
+
+// ===== BUILD SURVEY =====
+const surveyEl = document.getElementById("survey");
+const categories = [...new Set(QUESTIONS.map(q => q.category))];
+
+categories.forEach(cat => {
+  const section = document.createElement("div");
+  section.className = "category";
+  section.innerHTML = `<h2>${cat}</h2>`;
+
+  QUESTIONS.filter(q => q.category === cat).forEach((q, i) => {
+    const idx = QUESTIONS.indexOf(q);
+    const block = document.createElement("div");
+    block.className = "question-block";
+    block.innerHTML = `
+      <label for="q${idx}">${q.question}</label>
+      <textarea id="q${idx}" placeholder="Type your answer..." oninput="updateStats()"></textarea>
+    `;
+    section.appendChild(block);
+  });
+
+  surveyEl.appendChild(section);
+});
+
+updateStats();
+
+// ===== FUNCTIONS =====
+function updateStats() {
+  const total = QUESTIONS.length;
+  const answered = QUESTIONS.filter((_, i) =>
+    document.getElementById(`q${i}`).value.trim() !== ""
+  ).length;
+  document.getElementById("stats").innerHTML =
+    `Answered: <span>${answered}</span> / <span>${total}</span>`;
+}
+
+function saveJSON() {
+  const data = [];
+  QUESTIONS.forEach((q, i) => {
+    const answer = document.getElementById(`q${i}`).value.trim();
+    if (answer) {
+      data.push({ question: q.question, answer: answer });
+    }
+  });
+
+  if (data.length === 0) {
+    showToast("No answers to save!", "info");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "biography.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`Saved ${data.length} answers!`, "success");
+}
+
+function loadJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error("Expected a JSON array");
+
+      let loaded = 0;
+      data.forEach(item => {
+        const idx = QUESTIONS.findIndex(q => q.question === item.question);
+        if (idx !== -1 && item.answer) {
+          document.getElementById(`q${idx}`).value = item.answer;
+          loaded++;
+        }
+      });
+
+      updateStats();
+      showToast(`Loaded ${loaded} answers!`, "success");
+    } catch (err) {
+      showToast("Error reading JSON: " + err.message, "info");
+    }
+  };
+  reader.readAsText(file);
+  // Reset so same file can be loaded again
+  event.target.value = "";
+}
+
+function clearAll() {
+  if (!confirm("Clear all answers?")) return;
+  QUESTIONS.forEach((_, i) => {
+    document.getElementById(`q${i}`).value = "";
+  });
+  updateStats();
+  showToast("All answers cleared.", "info");
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.className = `toast ${type} show`;
+  setTimeout(() => toast.classList.remove("show"), 2500);
+}
+</script>
+
+</body>
+</html>

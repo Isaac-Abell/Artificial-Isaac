@@ -59,3 +59,8 @@ Thumbs.db
 # Test outputs
 test_results.json
 comparison_results.json
+
+#unsloth
+unsloth_cache/
+unsloth_compiled_cache/
+finetuned_model/
