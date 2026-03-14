@@ -79,16 +79,16 @@ pip install --upgrade pip
 
 # Step 2: Install PyTorch with CUDA FIRST
 # Visit https://pytorch.org/get-started/locally/ for your specific CUDA version
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+pip install torch==2.10.0+cu130 torchvision==0.25.0+cu130 torchaudio==2.10.0+cu130 --index-url https://download.pytorch.org/whl/cu130
 
 # Step 3: Install Triton
 # Windows:
-pip install triton-windows
+pip install triton-windows==3.6.0.post26
 # Linux:
-pip install triton
+pip install triton==3.6.0
 
 # Step 4: Install Unsloth (must match your PyTorch + CUDA version)
-pip install "unsloth[cu130-torch210] @ git+https://github.com/unslothai/unsloth.git"
+pip install "unsloth[cu130-torch210] @ git+https://github.com/unslothai/unsloth.git@3ab282fd402cf6af03660c4d8d89a7d4ba9da1ff"
 
 # Step 5: Install project in editable mode
 pip install -e .
