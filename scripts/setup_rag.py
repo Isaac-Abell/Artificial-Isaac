@@ -11,9 +11,8 @@ import sys
 from pathlib import Path
 
 # Add parent directory to path for config import
-sys.path.append(str(Path(__file__).parent.parent))
-from rag.rag_helper import RAGHelper
-from config import (
+from artificial_isaac.rag.rag_helper import RAGHelper
+from artificial_isaac.config import (
     CHROMA_DB_DIR,
     RAG_COLLECTION_NAME,
     RAG_DATA_FILE,

@@ -55,7 +55,10 @@ See **[TUTORIAL.md](./TUTORIAL.md)** for the complete step-by-step guide.
 ```
 Artificial-Isaac/
 │
-├── config.py                      # All configurable parameters
+├── artificial_isaac/              # Core package
+│   ├── config.py                  # All configurable parameters
+│   └── rag/                       # RAG module
+│       └── rag_helper.py          # ChromaDB indexing + querying
 │
 ├── scripts/                       # Executable scripts
 │   ├── preprocess_data.py         # WhatsApp + Instagram → training JSONL
@@ -63,9 +66,6 @@ Artificial-Isaac/
 │   ├── train_model_modal.py       # Fine-tune on Modal cloud GPUs
 │   ├── setup_rag.py               # Index biography.json into ChromaDB
 │   └── inference.py               # Interactive chat with RAG
-│
-├── rag/                           # RAG module
-│   └── rag_helper.py              # ChromaDB indexing + querying
 │
 ├── tools/                         # Utilities
 │   └── rag_survey.html            # Local HTML tool for RAG data entry
@@ -89,7 +89,7 @@ Artificial-Isaac/
 ├── finetuned_model/               # LoRA adapter weights (gitignored)
 ├── chroma_db/                     # RAG vector database (gitignored)
 │
-├── requirements.txt
+├── pyproject.toml
 ├── README.md
 ├── TUTORIAL.md
 ├── TODO.md
@@ -101,9 +101,9 @@ Artificial-Isaac/
 ## Configuration
 
 
-> **Note:** The default parameters in `config.py` are currently set for an RTX 5090 (32GB VRAM). If you are using a different GPU, review and adjust the configuration values (such as model size, batch size, and sequence length) to match your hardware. See the table below for recommendations. For a detailed explanation of all training parameters and troubleshooting memory errors, see **[CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md)**.
+> **Note:** The default parameters in `artificial_isaac/config.py` are currently set for an RTX 5090 (32GB VRAM). If you are using a different GPU, review and adjust the configuration values (such as model size, batch size, and sequence length) to match your hardware. See the table below for recommendations. For a detailed explanation of all training parameters and troubleshooting memory errors, see **[CONFIGURATION_GUIDE.md](./CONFIGURATION_GUIDE.md)**.
 
-All parameters live in a single `config.py` file:
+All parameters live in a single `artificial_isaac/config.py` file:
 
 | Section | Key Parameters |
 |---------|----------------|

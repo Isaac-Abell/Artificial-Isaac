@@ -9,10 +9,7 @@ import sys
 import pytest
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from rag.rag_helper import RAGHelper, get_context_for_prompt
+from artificial_isaac.rag.rag_helper import RAGHelper, get_context_for_prompt
 
 
 @pytest.fixture

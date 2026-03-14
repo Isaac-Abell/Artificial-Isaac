@@ -13,19 +13,20 @@ from pathlib import Path
 # Replace with your own name as it appears in WhatsApp/Instagram
 CHAT_OWNER = "Isaac Abell"
 
-# Data paths
-DATA_DIR = Path("data")
+# Data paths (anchored to project root)
+PROJECT_ROOT = Path(__file__).parent.parent
+DATA_DIR = PROJECT_ROOT / "data"
 WHATSAPP_DIR = DATA_DIR / "whatsapp"
 INSTAGRAM_DIR = DATA_DIR / "instagram" / "inbox"
 
 # Output path (single unified dataset in ShareGPT format)
-TRAINING_DATA_DIR = Path("training_data")
+TRAINING_DATA_DIR = PROJECT_ROOT / "training_data"
 DATASET_OUTPUT = TRAINING_DATA_DIR / "dataset.jsonl"
 
 # Model paths
-MODEL_OUTPUT_DIR = Path("finetuned_model")
-CHROMA_DB_DIR = Path("chroma_db")
-RAG_DATA_DIR = Path("rag_data")
+MODEL_OUTPUT_DIR = PROJECT_ROOT / "finetuned_model"
+CHROMA_DB_DIR = PROJECT_ROOT / "chroma_db"
+RAG_DATA_DIR = PROJECT_ROOT / "rag_data"
 RAG_DATA_FILE = RAG_DATA_DIR / "biography.json"
 
 # ==============================

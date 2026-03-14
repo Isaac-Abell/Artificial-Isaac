@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This document explains the key parameters in `config.py` used for training and running your personal AI model. Use this guide to understand how to tune the model's performance and memory usage.
+This document explains the key parameters in `artificial_isaac/config.py` used for training and running your personal AI model. Use this guide to understand how to tune the model's performance and memory usage.
 
 ## Training Parameters
 
